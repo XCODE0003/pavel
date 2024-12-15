@@ -1,0 +1,23 @@
+{
+  "name": "korabli",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "express": "^4.19.2",
+    "hbs": "^4.2.0",
+    "input": "^1.0.1",
+    "libphonenumber-js": "^1.11.7",
+    "mongoose": "^8.4.1",
+    "node-telegram-bot-api": "^0.63.0",
+    "telegram": "^2.22.2",
+    "ws": "^8.18.0"
+  }
+}
