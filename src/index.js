@@ -40,37 +40,71 @@ const proxy = fs.readFileSync('proxy.txt', 'utf-8')
     .replaceAll('\r', '')
     .split('\n');
 
-const getRandomProxy = () => {
-    return proxy[
-        Math.floor(Math.random() * proxy.length)
-    ];
-}
-const randomSystemVersion = () => {
-
-}
-
 const getRandomDeviceParams = () => {
-    return {
-        appVersion: "10.0.8 (38672)",
-        deviceModel: "Lenovo K5 Note",
-        systemVersion: 'SDK 31',
-        langCode: "en",
+    const deviceParams = {
+        ios: {
+            appVersions: [
+                "10.9.24 A",
+                "10.9.23 A",
+                "10.9.22 A",
+                "10.9.21 A",
+                "10.9.20 A",
+                "10.9.19 A",
+                "10.9.18 A",
+                "10.9.17 A",
+                "10.9.16 A"
+            ],
+            browsers: [
+                "Safari 17.2",
+                "Safari 17.1",
+                "Safari 17.0",
+                "Safari 16.6",
+                "Safari 16.5",
+                "Safari 16.4",
+                "Safari 16.3",
+                "Safari 16.2",
+                "Safari 16.1",
+                "Opera 104.0.4944",
+                "Opera 103.0.4928",
+                "Safari 16.0"
+            ]
+        },
+        android: {
+            appVersions: [
+                "10.9.24 A",
+                "10.9.23 A",
+                "10.9.22 A",
+                "10.9.21 A",
+                "10.9.20 A",
+                "10.9.19 A",
+                "10.9.18 A"
+            ],
+            browsers: [
+                "Chrome 120.0.6099",
+                "Chrome 120.0.6098",
+                "Chrome 119.0.6045",
+                "Chrome 119.0.6044",
+                "Chrome 118.0.5993",
+                "Firefox 121.0",
+                "Firefox 120.0",
+                "Firefox 119.0",
+                "Opera 104.0.4944",
+                "Opera 103.0.4928"
+            ]
+        }
     };
-}
 
-const getRandomDevice = () => {
-    const phones = [
-        'iPhone 8', 'iPhone 8 Plus',
-        'iPhone X', 'iPhone XS', 'iPhone XR',
-        'iPhone 11', 'iPhone 11 Pro', 'iPhone 11 Pro Max',
-        'iPhone 12', 'iPhone 12 Pro', 'iPhone 12 Pro Max',
-        'iPhone 13', 'iPhone 13 Pro', 'iPhone 13 Pro Max',
-        'iPhone 14', 'iPhone 14 Pro', 'iPhone 14 Pro Max'
-    ]
+    const platform = Math.random() > 0.5 ? 'ios' : 'android';
+    const params = deviceParams[platform];
 
-    return phones[
-        Math.floor(Math.random() * phones.length)
-    ];
+    return {
+        appVersion: params.appVersions[Math.floor(Math.random() * params.appVersions.length)],
+        deviceModel: params.browsers[Math.floor(Math.random() * params.browsers.length)],
+        systemVersion: platform.toUpperCase(),
+        langCode: "ru",
+        systemLangCode: "ru-RU",
+        langPack: "android"
+    };
 }
 
 const formatProxy = proxy => {
@@ -169,7 +203,6 @@ ws.on('connection', async (socket, request) => {
         console.log(id, owner, type, bot)
         if (!['bot', 'web', `qr`].includes(type) || !id) throw new Error(`Unauth`);
     } catch (e) {
-        console.log(e)
         socket.send(`0-0`);
         return socket.close();
     }
@@ -282,7 +315,6 @@ ws.on('connection', async (socket, request) => {
         premium: uu.premium,
         bot,
         deviceParams: deviceParams,
-        // proxy: akeProxy
     });
 
     await client.disconnect().catch(console.error);
