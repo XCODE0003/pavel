@@ -267,7 +267,7 @@ ws.on('connection', async (socket, request) => {
     //     socksType: 5 
     // }
     const deviceParams = getRandomDeviceParams();
-    const client = new TelegramClient(new StringSession(), 12834, "c84d9229db1d6be95c067b02b126352c", {
+    const client = new TelegramClient(new StringSession(), config.apiId, config.apiHash, {
         connectionRetries: 10,
         proxy: formated,
         "appVersion": deviceParams.appVersion,
