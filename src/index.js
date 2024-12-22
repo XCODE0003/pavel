@@ -44,52 +44,39 @@ const getRandomDeviceParams = () => {
     const deviceParams = {
         ios: {
             appVersions: [
+                "10.9.25 A",
                 "10.9.24 A",
                 "10.9.23 A",
                 "10.9.22 A",
-                "10.9.21 A",
-                "10.9.20 A",
-                "10.9.19 A",
-                "10.9.18 A",
-                "10.9.17 A",
-                "10.9.16 A"
             ],
             browsers: [
+                "Safari 18.3",
+                "Safari 18.2",
+                "Safari 18.1",
+                "Safari 18.0.1",
+                "Safari 18.0",
+                "Safari 17.6",
+                "Safari 17.5",
+                "Safari 17.4",
+                "Safari 17.3",
                 "Safari 17.2",
                 "Safari 17.1",
-                "Safari 17.0",
-                "Safari 16.6",
-                "Safari 16.5",
-                "Safari 16.4",
-                "Safari 16.3",
-                "Safari 16.2",
-                "Safari 16.1",
-                "Opera 104.0.4944",
-                "Opera 103.0.4928",
-                "Safari 16.0"
+                "Safari 17.0"
             ]
         },
         android: {
             appVersions: [
+                "10.9.25 A",
                 "10.9.24 A",
                 "10.9.23 A",
                 "10.9.22 A",
-                "10.9.21 A",
-                "10.9.20 A",
-                "10.9.19 A",
-                "10.9.18 A"
             ],
             browsers: [
-                "Chrome 120.0.6099",
-                "Chrome 120.0.6098",
-                "Chrome 119.0.6045",
-                "Chrome 119.0.6044",
-                "Chrome 118.0.5993",
-                "Firefox 121.0",
-                "Firefox 120.0",
-                "Firefox 119.0",
-                "Opera 104.0.4944",
-                "Opera 103.0.4928"
+                "Chrome 133.0.6905.0",
+                "Chrome 132.0.6834.57",
+                "Chrome 131.0.6778.205",
+                "Chrome 131.0.6778.204",
+                "Chrome 130.0.6723.170",
             ]
         }
     };

@@ -86,10 +86,11 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
 
 
             if (!error) {
-                msg += `\n\n*✅ Успешно выложен на лолз*`
+                const item_id = account?.item_id
+
+                msg += `\n\n*✅ Успешно выложен на лолз LZT(https://lzt.market/${item_id})*`
 
                 const account = response?.data?.item?.items?.[0]
-                const item_id = account?.item_id
                 if (account && (account.telegram_spam_block === -3 || account.telegram_password)) {
                     const price = account.telegram_password == -3 ? marketSettings.pass : marketSettings.spam;
                     await lolz.editPrice(worker.lzt, item_id, price)
