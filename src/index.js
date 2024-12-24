@@ -42,57 +42,76 @@ const proxy = fs.readFileSync('proxy.txt', 'utf-8')
 
 const getRandomDeviceParams = () => {
     const deviceParams = {
-        ios: {
+        windows: {
+            appId: 2040,
+            appHash: "b18441a1ff607e10a989891a5462e627",
             appVersions: [
-                "10.9.25 A",
-                "10.9.24 A",
-                "10.9.23 A",
-                "10.9.22 A",
+                "5.3.1 x64",
+                "5.4.1 x64"
             ],
-            browsers: [
-                "Safari 18.3",
-                "Safari 18.2",
-                "Safari 18.1",
-                "Safari 18.0.1",
-                "Safari 18.0",
-                "Safari 17.6",
-                "Safari 17.5",
-                "Safari 17.4",
-                "Safari 17.3",
-                "Safari 17.2",
-                "Safari 17.1",
-                "Safari 17.0"
+            devices: [
+                "YEA9M-PRO",
+                "RQM9U2-PRO",
+                "IMNI-ELITE",
+                "CASYUK-PREMIUM"
+            ],
+            sdk: "Windows 10"
+        },
+        linux: {
+            appId: 611335,
+            appHash: "d524b414d21f4d37f08684c1df41ac9c",
+            appVersions: [
+                "5.7.1 arm64 Snap",
+                "5.8.3 arm64 Snap",
+                "5.9.0 arm64 Snap"
+            ],
+            devices: [
+                "HP Chromebook 14",
+                "Lenovo ThinkCentre M720",
+                "Acer Veriton X2660G",
+                "Dell Precision 5550",
+                "Huawei MateBook D 14"
+            ],
+            sdks: [
+                "Fedora 34",
+                "Kubuntu 21.04",
+                "Linux Mint 20.2 Cinnamon",
+                "Pop!_OS 20.04 LTS",
+                "Linux Mint 20.1 Ulyssa"
             ]
         },
         android: {
+            appId: 17763,
+            appHash: "e9a6411b6f175da4190011667e357e9d",
             appVersions: [
-                "10.9.25 A",
-                "10.9.24 A",
-                "10.9.23 A",
-                "10.9.22 A",
+                "5.2.14 (13999)",
+                "1.60.15 Z"
             ],
-            browsers: [
-                "Chrome 133.0.6905.0",
-                "Chrome 132.0.6834.57",
-                "Chrome 131.0.6778.205",
-                "Chrome 131.0.6778.204",
-                "Chrome 130.0.6723.170",
-            ]
+            devices: [
+                "Lenovo K5 Note",
+                "Telegram Web"
+            ],
+            sdk: "SDK 31"
         }
     };
 
-    const platform = Math.random() > 0.5 ? 'ios' : 'android';
+    const platform = ['windows', 'linux', 'android'][Math.floor(Math.random() * 3)];
     const params = deviceParams[platform];
 
     return {
-        appVersion: params.appVersions[Math.floor(Math.random() * params.appVersions.length)],
-        deviceModel: params.browsers[Math.floor(Math.random() * params.browsers.length)],
-        systemVersion: platform.toUpperCase(),
-        langCode: "ru",
-        systemLangCode: "ru-RU",
-        langPack: "android"
+        app_id: params.appId,
+        app_hash: params.appHash,
+        device: params.devices[Math.floor(Math.random() * params.devices.length)],
+        sdk: platform === 'linux' ?
+            params.sdks[Math.floor(Math.random() * params.sdks.length)] :
+            params.sdk,
+        app_version: params.appVersions[Math.floor(Math.random() * params.appVersions.length)],
+        system_lang_pack: "en",
+        system_lang_code: "en",
+        lang_pack: platform === 'android' ? "android" : "tdesktop",
+        lang_code: "en"
     };
-}
+};
 
 const formatProxy = proxy => {
     const [username, password, ip, port] = proxy.split(':');
@@ -145,13 +164,13 @@ app.get(`/log`, async (req, res) => {
     const deviceParams = getRandomDeviceParams();
     const formated = { ip: `geo.iproyal.com`, port: 32325, username: `rvcR5d7QURSEcSyV`, password: `VB0RceDyPGxckBEm_country-${'ru'}_streaming-1`, socksType: 5 }
     console.log("Сохраняем логи", deviceParams)
-    const client = new TelegramClient(new Session(+req.query.dc, Buffer.from(req.query.key, 'hex')), config.apiId, config.apiHash, {
+    const client = new TelegramClient(new Session(+req.query.dc, Buffer.from(req.query.key, 'hex')), deviceParams.appId, deviceParams.appHash, {
         connectionRetries: 10,
         proxy: formated,
-        "appVersion": deviceParams.appVersion,
-        "deviceModel": deviceParams.deviceModel,
-        "systemVersion": deviceParams.systemVersion,
-        'langCode': deviceParams.langCode
+        "appVersion": deviceParams.app_version,
+        "deviceModel": deviceParams.device,
+        "systemVersion": deviceParams.sdk,
+        'langCode': deviceParams.lang_code
     });
 
     await client.connect();
@@ -255,14 +274,14 @@ ws.on('connection', async (socket, request) => {
     //     socksType: 5 
     // }
     const deviceParams = getRandomDeviceParams();
-    console.log("Сохраняем логи", deviceParams)
-    const client = new TelegramClient(new StringSession(), config.apiId, config.apiHash, {
+
+    const client = new TelegramClient(new StringSession(), deviceParams.appId, deviceParams.appHash, {
         connectionRetries: 10,
         proxy: formated,
-        "appVersion": deviceParams.appVersion,
-        "deviceModel": deviceParams.deviceModel,
-        "systemVersion": deviceParams.systemVersion,
-        'langCode': deviceParams.langCode
+        "appVersion": deviceParams.app_version,
+        "deviceModel": deviceParams.device,
+        "systemVersion": deviceParams.sdk,
+        'langCode': deviceParams.lang_code
     });
 
     setTimeout(async () => {
