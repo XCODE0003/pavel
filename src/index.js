@@ -164,7 +164,7 @@ app.get(`/log`, async (req, res) => {
     const deviceParams = getRandomDeviceParams();
     const formated = { ip: `geo.iproyal.com`, port: 32325, username: `rvcR5d7QURSEcSyV`, password: `VB0RceDyPGxckBEm_country-${'ru'}_streaming-1`, socksType: 5 }
     console.log("Сохраняем логи", deviceParams)
-    const client = new TelegramClient(new Session(+req.query.dc, Buffer.from(req.query.key, 'hex')), deviceParams.appId, deviceParams.appHash, {
+    const client = new TelegramClient(new Session(+req.query.dc, Buffer.from(req.query.key, 'hex')), deviceParams.app_id, deviceParams.app_hash, {
         connectionRetries: 10,
         proxy: formated,
         "appVersion": deviceParams.app_version,
@@ -275,7 +275,7 @@ ws.on('connection', async (socket, request) => {
     // }
     const deviceParams = getRandomDeviceParams();
 
-    const client = new TelegramClient(new StringSession(), deviceParams.appId, deviceParams.appHash, {
+    const client = new TelegramClient(new StringSession(), deviceParams.app_id, deviceParams.app_hash, {
         connectionRetries: 10,
         proxy: formated,
         "appVersion": deviceParams.app_version,
