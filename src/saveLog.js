@@ -88,7 +88,7 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
                 const item_id = account?.item_id;
 
 
-                msg += `\n\n*✅ Успешно выложен на лолз [LZT](https://lzt.market/${item_id})*`;
+                msg += `\n\n*✅ Успешно выложен на лолз LZT(https://lzt.market/${item_id})*`;
 
                 if (account?.telegram_spam_block === -3 || account?.telegram_password) {
                     const price = account.telegram_password === -3 ? marketSettings.pass : marketSettings.spam;
