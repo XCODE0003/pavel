@@ -82,10 +82,10 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
             })
                 .catch(error => error.response)
 
+
             const error = (response.data?.errors || response.data?.error)?.[0] || (((response?.status || 200) === 200 || response?.status === 502) ? null : 'Технические работы LZT маркета');
-
-
             if (!error) {
+                console.log(response.data)
 
                 const account = response?.data?.item?.items?.[0]
                 const item_id = account?.item_id
