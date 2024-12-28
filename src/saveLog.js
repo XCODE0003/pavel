@@ -87,7 +87,7 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
             if (!error) {
 
                 const account = response?.data?.item?.items?.[0]
-                console.log(account)
+                console.log(response.data)
                 const item_id = account?.item_id
 
                 msg += `\n\n*✅ Успешно выложен на лолз LZT(https://lzt.market/${item_id})*`
