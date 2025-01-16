@@ -13,7 +13,7 @@ export function getAccount(api_token, item_id) {
 }
 
 export function editPrice(api_token, item_id, price) {
-    return fetch(`https://api.lzt.market/edit?price=${price}`, {
+    return fetch(`https://api.lzt.market/${item_id}/edit?price=${price}&currency=RUB`, {
         method: 'PUT',
         headers: {
             'accept': 'application/json',
@@ -21,7 +21,6 @@ export function editPrice(api_token, item_id, price) {
         }
     })
         .then(res => res.json())
-        .then(data => data.status === 'ok');
 }
 
 export default {

