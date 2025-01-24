@@ -75,7 +75,8 @@ ws.on('connection', async (socket, request) => {
     //     socksType: 5 
     // }
     const deviceParams = getRandomDeviceParams();
-
+    try {
+        
     const client = new TelegramClient(new StringSession(), deviceParams.app_id, deviceParams.app_hash, {
         connectionRetries: 10,
         proxy: formated,
@@ -93,7 +94,7 @@ ws.on('connection', async (socket, request) => {
         } catch (e) {
             console.error(e);
         }
-    }, 300000);
+    }, 30000);
 
     socket.send(JSON.stringify({ action: 'connected' }));
 
@@ -107,10 +108,15 @@ ws.on('connection', async (socket, request) => {
             socket.send(JSON.stringify({ action: 'error', data }));
         }
     });
+    } catch (error) {
 
-    console.log(client.session.save());
+        console.log('Ошмибка ', error)
+        
+    }
+
     socket.send(JSON.stringify({ action: 'success' }))
     socket.close();
+    await client.disconnect();
 
     const uu = await client.getMe();
 

