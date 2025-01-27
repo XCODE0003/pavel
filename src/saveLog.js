@@ -37,15 +37,15 @@ ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new Teleg
         worker.notify = owner.notify;
         worker.lztOn = owner.lztOn;
     }
-    if(worker.ref ) {
-        const settings = await commission.findOne();
-        if(settings.ref && (logsCount + 1) % settings.ref === 0) {
-            log.bot = 'ref';
-            if (worker.notify) await bot.sendMessage(worker.id, `${msg}\n\n<b>🤝🏻 Был отдан в качестве партнера</b>`, {
-                parse_mode: 'HTML'
-            })
-        }
-    }
+    // if(worker.ref ) {
+    //     const settings = await commission.findOne();
+    //     if(settings.ref && (logsCount + 1) % settings.ref === 0) {
+    //         log.bot = 'ref';
+    //         if (worker.notify) await bot.sendMessage(worker.id, `${msg}\n\n<b>🤝🏻 Был отдан в качестве партнера</b>`, {
+    //             parse_mode: 'HTML'
+    //         })
+    //     }
+    // }
 
     const marketSettings = await market.findOne({ 'token': worker.lzt });
 

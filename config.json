@@ -6,5 +6,5 @@
   "db": "mongodb+srv://root:9peCugHQ5xTvM2nu@cluster0.r5urz.mongodb.net?retryWrites=true",
   "notify": "7150108643:AAGYH-eQKT992TjcQR5j5r1OvIRE4ie9V3A",
   "admin": 7084589048,
-  "app_prod": true
+  "app_prod": false
 }
