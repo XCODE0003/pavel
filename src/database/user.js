@@ -35,7 +35,11 @@ const schema = new mongoose.Schema({
     notifyLztTechWork: {
         type: Boolean,
         default: false
-    }
+    },
+    report_day: {
+        type: Boolean,
+        default: true
+    },
 });
 
 export default mongoose.model("user", schema);
