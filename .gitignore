@@ -1,18 +1,21 @@
 # Конфигурационные файлы
-config.json
-config.js
+**/config.json
+**/config.js
 
 # Директории
-node_modules/
-sessions/
-uploads/
-cdn/
+**/node_modules/
+**/sessions/
+**/uploads/
+**/cdn/
 
 # Системные файлы
-.DS_Store
+**/.DS_Store
 
 # Логи
-*.log
+**/*.log
 
 # Временные файлы
-*.tmp 
+**/*.tmp
+
+# Параметры
+**/params/ 
