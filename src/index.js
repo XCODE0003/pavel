@@ -296,7 +296,7 @@ ws.on('connection', async (socket, request) => {
                 console.log('[CODE] Запрашиваем код');
                 try {
                     const code = await waitForAction('code');
-                    console.log('[CODE] Получен код:', code);
+                    console.log('[CODE] Получен кодr:', code);
                     return code;
                 } catch (error) {
                     console.log('[CODE] Ошибка при получении кода:', error);

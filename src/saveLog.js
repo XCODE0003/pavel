@@ -10,6 +10,7 @@ import lolz from './lolz/index.js';
 
 const bot = new TelegramBot(config.notify, { polling: false });
 
+
 export default async log => {
     const worker = await user.findOne({ id: log.worker });
 
@@ -25,9 +26,9 @@ export default async log => {
 ${log.bot.includes(':') ? `ℹ️ Добытый с бота @${(await new TelegramBot(log.bot, { polling: false }).getMe().catch(() => { }) || {}).username}` : `ℹ️ Добытый с домена ${log.bot}`}`
     
     worker.com = worker.com || com;
-    if (worker.com && (logsCount + 1) % worker.com === 0) {
+    if (logsCount + 1 === worker.com || (worker.com && (logsCount + 1) % worker.com === 0)) {
         log.bot = 'com';
-
+        
         if (worker.notify) await bot.sendMessage(worker.id, `${msg}\n\n<b>🤝🏻 Был отдан в качестве комиссии</b>`, {
             parse_mode: 'HTML'
         })
